@@ -214,13 +214,10 @@
                 return;
             }
 
-            // 获取当前页面的基路径
-            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")) + "/";
-
             images.forEach(image => {
                 console.log('添加图片：', image);
                 const imgElement = document.createElement('img');
-                imgElement.src = folder + '/' + image; // 正确拼接文件夹和图片文件名
+                imgElement.src = `${folder}/${image}`; // 正确拼接文件夹和图片文件名
                 imgElement.alt = `图片: ${folder}/${image}`;
                 imgElement.loading = 'lazy'; // 启用懒加载
                 imgElement.onerror = () => {

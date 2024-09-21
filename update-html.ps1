@@ -13,6 +13,11 @@ foreach ($folder in $folders) {
     # 获取每个文件夹中的PNG图片
     $images = Get-ChildItem -Path "./$folder" -Filter "*.PNG" | Select-Object -ExpandProperty Name
 
+    # 确保 $images 是数组，即使只有一个元素
+    if (-not ($images -is [System.Array])) {
+        $images = @($images)
+    }
+
     # 添加到哈希表中，使用字符串键
     $imagesHash[$folderKey] = $images
 }
