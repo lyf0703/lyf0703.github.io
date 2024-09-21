@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- 元数据和样式 -->
+    <!-- 原有的 head 内容 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图片展示</title>
     <style>
-        /* 样式 */
+        /* 原有的样式 */
         body {
             margin: 0;
             padding: 0;
@@ -25,8 +25,6 @@
             flex-direction: column;
             width: 100%;
             height: 100%;
-            padding: 20px;
-            box-sizing: border-box;
         }
 
         img {
@@ -34,7 +32,7 @@
             height: auto;
             border: 2px solid #ddd;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin: 10px;
+            margin-bottom: 10px;
         }
 
         input[type="password"] {
@@ -43,8 +41,6 @@
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            width: 300px;
-            max-width: 80%;
         }
 
         button {
@@ -61,13 +57,10 @@
         #content {
             display: none;
             text-align: center;
-            width: 100%;
         }
 
         #folderSelection {
-            display: none;
-            text-align: center;
-            width: 100%;
+            margin-bottom: 20px;
         }
 
         #gallery {
@@ -79,18 +72,6 @@
         #gallery img {
             max-width: 200px;
             margin: 5px;
-            border-radius: 5px;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 600px) {
-            img {
-                max-width: 100%;
-            }
-
-            #gallery img {
-                max-width: 100%;
-            }
         }
     </style>
 </head>
@@ -104,7 +85,7 @@
         </div>
 
         <!-- 文件夹选择界面 -->
-        <div id="folderSelection">
+        <div id="folderSelection" style="display: none;">
             <h2>请选择一个文件夹</h2>
             <div id="folders">
                 <!-- 文件夹按钮将由 JavaScript 动态生成 -->
@@ -123,125 +104,70 @@
 
     <script>
         // 预先计算好的密码的 SHA-256 哈希值
-        const expectedHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // '123' 的哈希值
+        const expectedHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 'password' 的哈希值
 
-        /**
-         * 检查用户输入的密码是否正确
-         */
         async function checkPassword() {
-            const passwordInput = document.getElementById("password");
-            const password = passwordInput.value.trim();
-
-            if (password === "") {
-                alert("请输入密码。");
-                return;
-            }
+            const password = document.getElementById("password").value;
 
             // 计算输入密码的 SHA-256 哈希值
             const passwordHash = await sha256(password);
-            console.log('输入的密码哈希值：', passwordHash);
 
             // 如果哈希值匹配，则显示文件夹选择界面
             if (passwordHash === expectedHash) {
-                console.log('密码正确，显示文件夹选择界面');
-                document.getElementById("passwordPrompt").style.display = "none";
-                document.getElementById("folderSelection").style.display = "block";
-                loadFolders();
+                document.getElementById("passwordPrompt").style.display = "none"; // 隐藏密码输入框
+                document.getElementById("folderSelection").style.display = "block"; // 显示文件夹选择
+                loadFolders(); // 加载文件夹列表
             } else {
                 alert("密码错误，请重试。");
-                passwordInput.value = "";
             }
         }
 
-        /**
-         * 加载 images.json 并动态生成文件夹按钮
-         */
+        // 加载 images.json 并动态生成文件夹按钮
         async function loadFolders() {
             try {
                 const response = await fetch('images.json');
-                console.log('请求 images.json，响应状态：', response.status);
-
                 if (!response.ok) {
-                    throw new Error('无法加载 images.json');
+                    throw new Error('网络响应失败');
                 }
-
                 const imagesData = await response.json();
-                console.log('获取的 imagesData：', imagesData);
-
                 const foldersDiv = document.getElementById('folders');
-                foldersDiv.innerHTML = ''; // 清空文件夹列表
 
-                const folderNames = Object.keys(imagesData).sort((a, b) => a - b); // 按数字排序文件夹
-
-                folderNames.forEach(folder => {
-                    console.log('添加文件夹按钮：', folder);
+                Object.keys(imagesData).forEach(folder => {
                     const button = document.createElement('button');
-                    button.textContent = `文件夹 ${folder}`;
+                    button.textContent = folder;
                     button.onclick = () => showImages(folder, imagesData[folder]);
                     foldersDiv.appendChild(button);
                 });
-
-                // 如果没有文件夹
-                if (folderNames.length === 0) {
-                    foldersDiv.innerHTML = '<p>没有可显示的文件夹。</p>';
-                }
-
             } catch (error) {
                 console.error('获取文件夹信息时出错：', error);
-                alert('无法加载文件夹信息。请稍后再试。');
             }
         }
 
-        /**
-         * 显示选定文件夹中的图片
-         * @param {string} folder - 文件夹名称
-         * @param {Array} images - 图片路径数组
-         */
+        // 显示选定文件夹中的图片
         function showImages(folder, images) {
-            console.log('显示文件夹：', folder);
-            console.log('图片列表：', images);
-
-            // 隐藏文件夹选择界面，显示图片内容区域
-            document.getElementById("folderSelection").style.display = "none";
-            document.getElementById("content").style.display = "block";
-            document.getElementById("folderTitle").textContent = `文件夹：${folder}`;
+            document.getElementById("folderSelection").style.display = "none"; // 隐藏文件夹选择
+            document.getElementById("content").style.display = "block"; // 显示图片内容
+            document.getElementById("folderTitle").textContent = `文件夹：${folder}`; // 更新标题
 
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = ''; // 清空之前的图片
 
-            if (images.length === 0) {
-                gallery.innerHTML = '<p>此文件夹中没有图片。</p>';
-                return;
-            }
-
             images.forEach(image => {
-                console.log('添加图片：', image);
                 const imgElement = document.createElement('img');
-                imgElement.src = `${folder}/${image}`; // 正确拼接文件夹和图片文件名
-                imgElement.alt = `图片: ${folder}/${image}`;
+                imgElement.src = `${folder}/${image}`;
+                imgElement.alt = image;
                 imgElement.loading = 'lazy'; // 启用懒加载
-                imgElement.onerror = () => {
-                    imgElement.alt = '图片加载失败';
-                    imgElement.src = 'https://via.placeholder.com/200?text=Image+Not+Found';
-                };
                 gallery.appendChild(imgElement);
             });
         }
 
-        /**
-         * 返回文件夹选择界面
-         */
+        // 返回文件夹选择界面
         function backToFolders() {
-            console.log('返回文件夹选择界面');
-            document.getElementById("content").style.display = "none";
-            document.getElementById("folderSelection").style.display = "block";
+            document.getElementById("content").style.display = "none"; // 隐藏图片内容
+            document.getElementById("folderSelection").style.display = "block"; // 显示文件夹选择
         }
 
-        /**
-         * 使用 SubtleCrypto API 计算 SHA-256 哈希值
-         * @param {string} message - 要哈希的消息
-         * @returns {Promise<string>} - 哈希后的十六进制字符串
-         */
+        // 使用 SubtleCrypto API 计算 SHA-256 哈希值
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
