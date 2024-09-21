@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> </title>
+    <style>
+        /* 页面通用样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 包含密码输入框和简历图片的容器，确保居中显示 */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 图片样式，确保在不同设备上按比例缩放 */
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 输入框和按钮样式 */
+        input[type="password"] {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        }
+
+        #content {
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 密码输入界面 -->
+        <div id="passwordPrompt">
+            <h2>Please enter the password to view the content</h2>
+            <input type="password" id="password" placeholder="Enter Password">
+            <button onclick="checkPassword()">Submit</button>
+        </div>
+
+        <!-- 简历图片的内容区域 -->
+        <div id="content">
+            <h2>photo</h2>
+            <!-- 将你的简历图片 URL 放在这里 -->
+            <img src="photo.jpg" alt="Resume">
+        </div>
+    </div>
+
+    <script>
+        // 这是你预先计算好的密码的 SHA-256 哈希值（不可逆）
+        const expectedHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // Example for 'password'
+
+        async function checkPassword() {
+            const password = document.getElementById("password").value;
+
+            // 计算输入密码的 SHA-256 哈希值
+            const passwordHash = await sha256(password);
+
+            // 如果哈希值匹配，则显示简历内容
+            if (passwordHash === expectedHash) {
+                document.getElementById("passwordPrompt").style.display = "none"; // 隐藏密码输入框
+                document.getElementById("content").style.display = "block"; // 显示简历内容
+            } else {
+                alert("Incorrect password. Please try again.");
+            }
+        }
+
+        // 使用 SubtleCrypto API 计算 SHA-256 哈希值
+        async function sha256(message) {
+            // 将字符串编码为 UTF-8
+            const msgBuffer = new TextEncoder().encode(message);
+
+            // 计算消息的哈希值
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+
+            // 将 ArrayBuffer 转换为字节数组
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+
+            // 将字节数组转换为十六进制字符串
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+    </script>
+</body>
+</html>
