@@ -79,14 +79,14 @@
     <div class="container">
         <!-- 密码输入界面 -->
         <div id="passwordPrompt">
-            <h2>请输入密码以查看内容</h2>
-            <input type="password" id="password" placeholder="输入密码">
-            <button onclick="checkPassword()">提交</button>
+            <h2>Enter password</h2>
+            <input type="password" id="password" placeholder="Enter password">
+            <button onclick="checkPassword()">submit</button>
         </div>
 
         <!-- 文件夹选择界面 -->
         <div id="folderSelection" style="display: none;">
-            <h2>请选择一个文件夹</h2>
+            <h2>Select a folder</h2>
             <div id="folders">
                 <!-- 文件夹按钮将由 JavaScript 动态生成 -->
             </div>
@@ -94,11 +94,11 @@
 
         <!-- 图片内容区域 -->
         <div id="content">
-            <h2 id="folderTitle">照片</h2>
+            <h2 id="folderTitle"> </h2>
             <div id="gallery">
                 <!-- 图片将由 JavaScript 动态加载 -->
             </div>
-            <button onclick="backToFolders()">返回文件夹选择</button>
+            <button onclick="backToFolders()">Back</button>
         </div>
     </div>
 
@@ -147,7 +147,7 @@
         function showImages(folder, images) {
             document.getElementById("folderSelection").style.display = "none"; // 隐藏文件夹选择
             document.getElementById("content").style.display = "block"; // 显示图片内容
-            document.getElementById("folderTitle").textContent = `文件夹：${folder}`; // 更新标题
+            document.getElementById("folderTitle").textContent = `${folder}`; // 更新标题
 
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = ''; // 清空之前的图片
