@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- 原有的 head 内容 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> </title>
+    <title>图片展示</title>
     <style>
-        /* 页面通用样式 */
+        /* 原有的样式 */
         body {
             margin: 0;
             padding: 0;
@@ -17,7 +18,6 @@
             font-family: Arial, sans-serif;
         }
 
-        /* 包含密码输入框和简历图片的容器，确保居中显示 */
         .container {
             display: flex;
             justify-content: center;
@@ -27,15 +27,14 @@
             height: 100%;
         }
 
-        /* 图片样式，确保在不同设备上按比例缩放 */
         img {
             max-width: 100%;
             height: auto;
             border: 2px solid #ddd;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
         }
 
-        /* 输入框和按钮样式 */
         input[type="password"] {
             padding: 10px;
             font-size: 16px;
@@ -52,11 +51,27 @@
             background-color: #4CAF50;
             color: white;
             border-radius: 5px;
+            margin: 5px;
         }
 
         #content {
             display: none;
             text-align: center;
+        }
+
+        #folderSelection {
+            margin-bottom: 20px;
+        }
+
+        #gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        #gallery img {
+            max-width: 200px;
+            margin: 5px;
         }
     </style>
 </head>
@@ -64,22 +79,32 @@
     <div class="container">
         <!-- 密码输入界面 -->
         <div id="passwordPrompt">
-            <h2>Please enter the password to view the content</h2>
-            <input type="password" id="password" placeholder="Enter Password">
-            <button onclick="checkPassword()">Submit</button>
+            <h2>请输入密码以查看内容</h2>
+            <input type="password" id="password" placeholder="输入密码">
+            <button onclick="checkPassword()">提交</button>
         </div>
 
-        <!-- 简历图片的内容区域 -->
+        <!-- 文件夹选择界面 -->
+        <div id="folderSelection" style="display: none;">
+            <h2>请选择一个文件夹</h2>
+            <div id="folders">
+                <!-- 文件夹按钮将由 JavaScript 动态生成 -->
+            </div>
+        </div>
+
+        <!-- 图片内容区域 -->
         <div id="content">
-            <h2>photo</h2>
-            <!-- 将你的简历图片 URL 放在这里 -->
-            <img src="photo.jpg" alt="Resume">
+            <h2 id="folderTitle">照片</h2>
+            <div id="gallery">
+                <!-- 图片将由 JavaScript 动态加载 -->
+            </div>
+            <button onclick="backToFolders()">返回文件夹选择</button>
         </div>
     </div>
 
     <script>
-        // 这是你预先计算好的密码的 SHA-256 哈希值（不可逆）
-        const expectedHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // Example for 'password'
+        // 预先计算好的密码的 SHA-256 哈希值
+        const expectedHash = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 'password' 的哈希值
 
         async function checkPassword() {
             const password = document.getElementById("password").value;
@@ -87,27 +112,66 @@
             // 计算输入密码的 SHA-256 哈希值
             const passwordHash = await sha256(password);
 
-            // 如果哈希值匹配，则显示简历内容
+            // 如果哈希值匹配，则显示文件夹选择界面
             if (passwordHash === expectedHash) {
                 document.getElementById("passwordPrompt").style.display = "none"; // 隐藏密码输入框
-                document.getElementById("content").style.display = "block"; // 显示简历内容
+                document.getElementById("folderSelection").style.display = "block"; // 显示文件夹选择
+                loadFolders(); // 加载文件夹列表
             } else {
-                alert("Incorrect password. Please try again.");
+                alert("密码错误，请重试。");
             }
+        }
+
+        // 加载 images.json 并动态生成文件夹按钮
+        async function loadFolders() {
+            try {
+                const response = await fetch('images.json');
+                if (!response.ok) {
+                    throw new Error('网络响应失败');
+                }
+                const imagesData = await response.json();
+                const foldersDiv = document.getElementById('folders');
+
+                Object.keys(imagesData).forEach(folder => {
+                    const button = document.createElement('button');
+                    button.textContent = folder;
+                    button.onclick = () => showImages(folder, imagesData[folder]);
+                    foldersDiv.appendChild(button);
+                });
+            } catch (error) {
+                console.error('获取文件夹信息时出错：', error);
+            }
+        }
+
+        // 显示选定文件夹中的图片
+        function showImages(folder, images) {
+            document.getElementById("folderSelection").style.display = "none"; // 隐藏文件夹选择
+            document.getElementById("content").style.display = "block"; // 显示图片内容
+            document.getElementById("folderTitle").textContent = `文件夹：${folder}`; // 更新标题
+
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = ''; // 清空之前的图片
+
+            images.forEach(image => {
+                const imgElement = document.createElement('img');
+                imgElement.src = `${folder}/${image}`;
+                imgElement.alt = image;
+                imgElement.loading = 'lazy'; // 启用懒加载
+                gallery.appendChild(imgElement);
+            });
+        }
+
+        // 返回文件夹选择界面
+        function backToFolders() {
+            document.getElementById("content").style.display = "none"; // 隐藏图片内容
+            document.getElementById("folderSelection").style.display = "block"; // 显示文件夹选择
         }
 
         // 使用 SubtleCrypto API 计算 SHA-256 哈希值
         async function sha256(message) {
-            // 将字符串编码为 UTF-8
             const msgBuffer = new TextEncoder().encode(message);
-
-            // 计算消息的哈希值
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-
-            // 将 ArrayBuffer 转换为字节数组
             const hashArray = Array.from(new Uint8Array(hashBuffer));
-
-            // 将字节数组转换为十六进制字符串
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             return hashHex;
         }
